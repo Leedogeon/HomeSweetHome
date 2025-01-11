@@ -25,6 +25,7 @@ public class Player : MonoBehaviour
     float DashPower = 3f;
     float DashTime = .3f;
     float DashCoolDown = 1f;
+    float DashCoolCheck;
     // 대쉬용
     Vector2 startPos;
     Vector2 targetPos;
@@ -36,7 +37,6 @@ public class Player : MonoBehaviour
             jumpCountBase = 2;
         }
         jumpCount = jumpCountBase;
-
     }
 
     
@@ -45,8 +45,13 @@ public class Player : MonoBehaviour
     {
         GetInput();
         Move();
-
-    }
+        
+        if(DashCoolCheck >= 0 )
+        {
+            DashCoolCheck -= Time.deltaTime;
+        }
+        if (DashCoolCheck <= 0) isDash = false;
+     }
     void GetInput()
     {
         // 좌우 이동값
@@ -80,7 +85,7 @@ public class Player : MonoBehaviour
     IEnumerator Dash()
     {
         isDash = true;
-
+        DashCoolCheck = DashCoolDown;
         // 시작 위치와 목표 위치 설정
         Vector2 startPos = transform.position;
         Vector2 targetPos = new Vector2(transform.position.x + (DashPower * Mathf.Sign(MoveForward)), transform.position.y);
@@ -91,6 +96,7 @@ public class Player : MonoBehaviour
         // 대쉬 애니메이션 처리
         while (elapsedTime < DashTime)
         {
+            
             elapsedTime += Time.deltaTime;
 
             // Lerp를 사용하여 대쉬 중간 위치 계산
@@ -100,7 +106,6 @@ public class Player : MonoBehaviour
 
         // 대쉬 종료 후 위치 고정
         transform.position = targetPos;
-        isDash = false;
     }
     void Attack()
     {
