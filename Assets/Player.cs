@@ -115,12 +115,16 @@ public class Player : MonoBehaviour
     // 2D라서 2D 사용
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        print("test");
         if (collision.gameObject.tag == "Floor")
         {
             print(collision.gameObject.tag);
             isJump = false;
             jumpCount = jumpCountBase;
+        }
+
+        if(collision.gameObject.tag == "Object")
+        {
+
         }
     }
 }
