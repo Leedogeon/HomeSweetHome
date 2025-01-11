@@ -11,17 +11,32 @@ public class Player : MonoBehaviour
     float MoveForward;
     float MoveUp;
     float speed = 5f;
+
     bool isJump = false;
     float jumpPower = 5f;
+    // 점프 카운트
+    int jumpCountBase = 1;
+    // 인게임 점프 카운트
+    int jumpCount;
+    // 더블점프 획득 시 점프 카운트 변경
+    bool doubleJump = false;
+
     bool isDash = false;
     float DashPower = 3f;
     float DashTime = .3f;
     float DashCoolDown = 1f;
+    // 대쉬용
     Vector2 startPos;
     Vector2 targetPos;
     void Start()
     {
         rigid = GetComponent<Rigidbody2D>();
+        if (doubleJump)
+        {
+            jumpCountBase = 2;
+        }
+        jumpCount = jumpCountBase;
+
     }
 
     
@@ -30,20 +45,24 @@ public class Player : MonoBehaviour
     {
         GetInput();
         Move();
-        
+
     }
     void GetInput()
     {
         // 좌우 이동값
         MoveForward = Input.GetAxis("Horizontal");
         MoveUp = Input.GetAxis("Vertical");
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump") && jumpCount >=1)
         {
             Jump();
         }
         if (Input.GetButtonDown("Dash") && !isDash)
         {
             StartCoroutine(Dash());
+        }
+        if(Input.GetButtonDown("Fire1"))
+        {
+            Attack();
         }
     }
     void Move()
@@ -53,28 +72,11 @@ public class Player : MonoBehaviour
     }
     void Jump()
     {
+        jumpCount--;
         // 점프
         isJump = true;
         rigid.velocity = Vector2.up*jumpPower;
     }
-    /*void Dash()
-    {
-        DashStart = Time.time;
-        // 대쉬, 현재 순간이동 상태로 구현
-        isDash = true;
-        print("dash");
-        //transform.position += transform.right * DashPower;
-        startPos = transform.position;
-        targetPos = new Vector2 (startPos.x + DashPower,startPos.y);
-        float t = (Time.time - DashTime) / DashTime;
-        if(t > 1f)
-        {
-            t = 1f;
-        }
-        Vector2 newPos = Vector2.Lerp(startPos, targetPos, t);
-        transform.position = newPos;
-        isDash = false;
-    }*/
     IEnumerator Dash()
     {
         isDash = true;
@@ -82,7 +84,8 @@ public class Player : MonoBehaviour
         // 시작 위치와 목표 위치 설정
         Vector2 startPos = transform.position;
         Vector2 targetPos = new Vector2(transform.position.x + (DashPower * Mathf.Sign(MoveForward)), transform.position.y);
-
+        if (MoveUp != 0 && MoveForward!=0) targetPos = new Vector2(transform.position.x + (DashPower * Mathf.Sign(MoveForward)), transform.position.y + (DashPower * Mathf.Sign(MoveUp)));
+        
         float elapsedTime = 0f;
 
         // 대쉬 애니메이션 처리
@@ -98,5 +101,21 @@ public class Player : MonoBehaviour
         // 대쉬 종료 후 위치 고정
         transform.position = targetPos;
         isDash = false;
+    }
+    void Attack()
+    {
+        print("Attack");
+    }
+
+    // 2D라서 2D 사용
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        print("test");
+        if (collision.gameObject.tag == "Floor")
+        {
+            print(collision.gameObject.tag);
+            isJump = false;
+            jumpCount = jumpCountBase;
+        }
     }
 }
