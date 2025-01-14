@@ -11,6 +11,8 @@ public class Player : MonoBehaviour
     float MoveForward;
     float MoveUp;
     float speed = 5f;
+    // 뒤집기
+    SpriteRenderer spriteRenderer;
 
     bool isJump = false;
     float jumpPower = 5f;
@@ -29,8 +31,15 @@ public class Player : MonoBehaviour
     // 대쉬용
     Vector2 startPos;
     Vector2 targetPos;
+
+    // 피격시
+    bool isDamaged = false;
+    float KnockBack = .5f;
+    float DamagedTime = .1f;
+
     void Start()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
         rigid = GetComponent<Rigidbody2D>();
         if (doubleJump)
         {
@@ -45,12 +54,13 @@ public class Player : MonoBehaviour
     {
         GetInput();
         Move();
-        
         if(DashCoolCheck >= 0 )
         {
             DashCoolCheck -= Time.deltaTime;
         }
         if (DashCoolCheck <= 0) isDash = false;
+
+        
      }
     void GetInput()
     {
@@ -69,9 +79,15 @@ public class Player : MonoBehaviour
         {
             Attack();
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            StartCoroutine(Damaged());
+        }
     }
     void Move()
     {
+        if (MoveForward > 0) spriteRenderer.flipX = false;
+        else if (MoveForward < 0) spriteRenderer.flipX = true;
         // 이동, 점프시 속도 감소
         rigid.velocity = new Vector2(MoveForward * (isJump? speed/3:speed), rigid.velocity.y);
     }
@@ -111,6 +127,26 @@ public class Player : MonoBehaviour
     {
         print("Attack");
     }
+
+    IEnumerator Damaged()
+    {
+        isDamaged = true;
+        Vector2 startPos = transform.position;
+        // 바라보는 방향에따라 피격당하는 방향 변경
+        // 자세하게 구현할 시 공격하는 물체에 위치에따라 이동하도록 변경해야됨
+        float Vec = spriteRenderer.flipX ? KnockBack : -KnockBack;
+        Vector2 targetPos = new Vector2(transform.position.x + Vec, transform.position.y);
+        float elapsedTime = 0f;
+        while(elapsedTime < DamagedTime)
+        {
+            elapsedTime += Time.deltaTime;
+
+            transform.position = Vector2.Lerp(startPos, targetPos,elapsedTime / DamagedTime);
+            yield return null;
+        }
+        transform.position = targetPos;
+    }
+
 
     // 2D라서 2D 사용
     private void OnCollisionEnter2D(Collision2D collision)
