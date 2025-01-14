@@ -34,9 +34,12 @@ public class Player : MonoBehaviour
 
     // 피격시
     bool isDamaged = false;
+    // 넉백거리, 이동시간
     float KnockBack = .5f;
     float DamagedTime = .1f;
-
+    // 무적시간
+    float invincibilityTime = .75f;
+    float invincibilityCheck = 0f;
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -46,6 +49,7 @@ public class Player : MonoBehaviour
             jumpCountBase = 2;
         }
         jumpCount = jumpCountBase;
+        
     }
 
     
@@ -60,8 +64,15 @@ public class Player : MonoBehaviour
         }
         if (DashCoolCheck <= 0) isDash = false;
 
+        if(invincibilityCheck >= 0)
+        {
+            invincibilityCheck -= Time.deltaTime;
+        }
+        if (invincibilityCheck <= 0) isDamaged = false;
         
-     }
+
+
+    }
     void GetInput()
     {
         // 좌우 이동값
@@ -79,7 +90,7 @@ public class Player : MonoBehaviour
         {
             Attack();
         }
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.P) && !isDamaged)
         {
             StartCoroutine(Damaged());
         }
@@ -131,6 +142,7 @@ public class Player : MonoBehaviour
     IEnumerator Damaged()
     {
         isDamaged = true;
+        invincibilityCheck = invincibilityTime;
         Vector2 startPos = transform.position;
         // 바라보는 방향에따라 피격당하는 방향 변경
         // 자세하게 구현할 시 공격하는 물체에 위치에따라 이동하도록 변경해야됨
