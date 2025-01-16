@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour
 {
     Rigidbody2D rigid;
+    Animator anim;
     float MoveForward;
     float MoveUp;
     float speed = 5f;
@@ -25,6 +26,9 @@ public class Player : MonoBehaviour
     // 더블점프 획득 시 점프 카운트 변경
     bool doubleJump = false;
 
+
+    // 공격
+    float AttackTime = 0.2f;
     // 대쉬용
     bool isDash = false;
     bool canDash = true;
@@ -47,6 +51,7 @@ public class Player : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         rigid = GetComponent<Rigidbody2D>();
         tr = GetComponent<TrailRenderer>();
+        anim = GetComponent<Animator>();
         if (doubleJump)
         {
             jumpCountBase = 2;
@@ -80,7 +85,7 @@ public class Player : MonoBehaviour
         }
         if(Input.GetButtonDown("Fire1"))
         {
-            Attack();
+            StartCoroutine(Attack());
         }
         if (Input.GetKeyDown(KeyCode.P) && !invincibility)
         {
@@ -141,9 +146,12 @@ public class Player : MonoBehaviour
         
     }
 
-    void Attack()
+    IEnumerator Attack()
     {
-        print("Attack");
+        anim.SetBool("isAttack",true);
+
+        yield return new WaitForSeconds(AttackTime);
+        anim.SetBool("isAttack", false);
     }
 
     IEnumerator Damaged()
