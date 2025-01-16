@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -13,6 +14,7 @@ public class Player : MonoBehaviour
     float speed = 5f;
     // 뒤집기
     SpriteRenderer spriteRenderer;
+    bool isFacingRight = true;
 
     bool isJump = false;
     float jumpPower = 5f;
@@ -23,27 +25,28 @@ public class Player : MonoBehaviour
     // 더블점프 획득 시 점프 카운트 변경
     bool doubleJump = false;
 
-    bool isDash = false;
-    float DashPower = 3f;
-    float DashTime = .3f;
-    float DashCoolDown = 1f;
-    float DashCoolCheck;
     // 대쉬용
-    Vector2 startPos;
-    Vector2 targetPos;
+    bool isDash = false;
+    bool canDash = true;
+    float DashPower = 10f;
+    float DashTime = .2f;
+    float DashCoolDown = 1f;
+    TrailRenderer tr;
 
     // 피격시
     bool isDamaged = false;
     // 넉백거리, 이동시간
+    float KnockBackPower = 3f;
     float KnockBack = .5f;
-    float DamagedTime = .1f;
+    bool isKnockBack = false;
     // 무적시간
     float invincibilityTime = .75f;
-    float invincibilityCheck = 0f;
+    bool invincibility = false;
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rigid = GetComponent<Rigidbody2D>();
+        tr = GetComponent<TrailRenderer>();
         if (doubleJump)
         {
             jumpCountBase = 2;
@@ -58,19 +61,7 @@ public class Player : MonoBehaviour
     {
         GetInput();
         Move();
-        if(DashCoolCheck >= 0 )
-        {
-            DashCoolCheck -= Time.deltaTime;
-        }
-        if (DashCoolCheck <= 0) isDash = false;
-
-        if(invincibilityCheck >= 0)
-        {
-            invincibilityCheck -= Time.deltaTime;
-        }
-        if (invincibilityCheck <= 0) isDamaged = false;
-        
-
+        Flip();
 
     }
     void GetInput()
@@ -82,25 +73,40 @@ public class Player : MonoBehaviour
         {
             Jump();
         }
-        if (Input.GetButtonDown("Dash") && !isDash)
+        if (Input.GetButtonDown("Dash") && canDash)
         {
+            print("Dash");
             StartCoroutine(Dash());
         }
         if(Input.GetButtonDown("Fire1"))
         {
             Attack();
         }
-        if (Input.GetKeyDown(KeyCode.P) && !isDamaged)
+        if (Input.GetKeyDown(KeyCode.P) && !invincibility)
         {
             StartCoroutine(Damaged());
         }
     }
     void Move()
     {
-        if (MoveForward > 0) spriteRenderer.flipX = false;
-        else if (MoveForward < 0) spriteRenderer.flipX = true;
+        // flip을 이용할지 scale을 이용할지 선택해야됨
+        /*if (MoveForward > 0) spriteRenderer.flipX = false;
+        else if (MoveForward < 0) spriteRenderer.flipX = true;*/
         // 이동, 점프시 속도 감소
-        rigid.velocity = new Vector2(MoveForward * (isJump? speed/3:speed), rigid.velocity.y);
+        if (!isDash && !isDamaged)
+        {
+            rigid.velocity = new Vector2(MoveForward * (isJump ? speed / 3 : speed), rigid.velocity.y);
+        }
+    }
+    void Flip()
+    {
+        if(isFacingRight && MoveForward <0f || !isFacingRight && MoveForward >0f)
+        {
+            Vector3 localScale = transform.localScale;
+            isFacingRight = !isFacingRight;
+            localScale.x *= -1f;
+            transform.localScale = localScale;
+        }
     }
     void Jump()
     {
@@ -112,28 +118,29 @@ public class Player : MonoBehaviour
     IEnumerator Dash()
     {
         isDash = true;
-        DashCoolCheck = DashCoolDown;
-        // 시작 위치와 목표 위치 설정
-        Vector2 startPos = transform.position;
-        Vector2 targetPos = new Vector2(transform.position.x + (DashPower * Mathf.Sign(MoveForward)), transform.position.y);
-        if (MoveUp != 0 && MoveForward!=0) targetPos = new Vector2(transform.position.x + (DashPower * Mathf.Sign(MoveForward)), transform.position.y + (DashPower * Mathf.Sign(MoveUp)));
+        canDash = false;
+        // 대쉬중 중력영향 무시
+        float gravity = rigid.gravityScale;
+        rigid.gravityScale = 0f;
         
-        float elapsedTime = 0f;
+        // 대각대쉬, 일반대쉬
+        if(MoveUp != 0f)
+            rigid.velocity = new Vector2(DashPower * Mathf.Sign(MoveForward), DashPower * Mathf.Sign(MoveUp));
+        else
+            rigid.velocity = new Vector2(DashPower * Mathf.Sign(MoveForward), 0f);
 
-        // 대쉬 애니메이션 처리
-        while (elapsedTime < DashTime)
-        {
-            
-            elapsedTime += Time.deltaTime;
+        tr.emitting = true;
 
-            // Lerp를 사용하여 대쉬 중간 위치 계산
-            transform.position = Vector2.Lerp(startPos, targetPos, elapsedTime / DashTime);
-            yield return null; // 다음 프레임까지 대기
-        }
-
-        // 대쉬 종료 후 위치 고정
-        transform.position = targetPos;
+        yield return new WaitForSeconds(DashTime);
+        tr.emitting = false;
+        rigid.velocity = Vector2.zero;
+        rigid.gravityScale = gravity;
+        isDash = false;
+        yield return new WaitForSeconds(DashCoolDown);
+        canDash = true;
+        
     }
+
     void Attack()
     {
         print("Attack");
@@ -142,21 +149,18 @@ public class Player : MonoBehaviour
     IEnumerator Damaged()
     {
         isDamaged = true;
-        invincibilityCheck = invincibilityTime;
-        Vector2 startPos = transform.position;
-        // 바라보는 방향에따라 피격당하는 방향 변경
-        // 자세하게 구현할 시 공격하는 물체에 위치에따라 이동하도록 변경해야됨
-        float Vec = spriteRenderer.flipX ? KnockBack : -KnockBack;
-        Vector2 targetPos = new Vector2(transform.position.x + Vec, transform.position.y);
-        float elapsedTime = 0f;
-        while(elapsedTime < DamagedTime)
-        {
-            elapsedTime += Time.deltaTime;
+        // 무적상태
+        invincibility = true;
+        // localScale반대로 이동
+        rigid.velocity = new Vector2(KnockBackPower * Mathf.Sign(MoveForward) * -transform.localScale.x, 0f);
+        
+        yield return new WaitForSeconds(KnockBack);
+        isDamaged = false;
 
-            transform.position = Vector2.Lerp(startPos, targetPos,elapsedTime / DamagedTime);
-            yield return null;
-        }
-        transform.position = targetPos;
+        yield return new WaitForSeconds(invincibilityTime);
+        invincibility = false;
+        print("무적해제");
+
     }
 
 
@@ -168,11 +172,6 @@ public class Player : MonoBehaviour
             print(collision.gameObject.tag);
             isJump = false;
             jumpCount = jumpCountBase;
-        }
-
-        if(collision.gameObject.tag == "Object")
-        {
-
         }
     }
 }
