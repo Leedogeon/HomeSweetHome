@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Platform
+  - Spawn
+  - Floor
+  - Portal
+  - Enemy
+  - Object
+  - Door
+  - Bullet
+  - BossAttack
+  - BossCore
+  - ShortCut
+  - ShortCutObj
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - Player
+  - DashLayer
+  - JumpLayer
+  - UpLayer
+  - Invinsible
+  - AttackRange
+  - Enemy
+  - EnemyDeath
+  - 
+  - Wall
+  - Platform
+  - Floor
+  - map
+  - Elevator
+  - Poison
+  - Socket
+  - Slide
+  - PostProcessing
+  - 
+  - Opened
+  - 
+  - 
+  - 
+  - 
+  - bullet
+  - Item
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
