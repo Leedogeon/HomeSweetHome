@@ -115,3 +115,11 @@ void CheckColliderOverlap()
 }
 
 
+PolygonCollider를 이용하여 카메라의 범위를 제한<br>
+<img width="367" height="404" alt="image" src="https://github.com/user-attachments/assets/816b6c62-657a-455b-84f2-e63c2b42e34a" /><br>
+<img width="636" height="275" alt="image" src="https://github.com/user-attachments/assets/7c2b7343-41a6-4dbf-9f55-fb29e0412c07" /><br>
+<img width="367" height="118" alt="image" src="https://github.com/user-attachments/assets/e379b10f-af75-4c45-92ab-0058eb3d9693" /><br>
+시네마틱 카메라를 이용하여 현재있는 맵의 PolygonCollider를 넘기 못하게 설정
+
+<img width="960" height="411" alt="2026-09-15-13-52-32-github" src="https://github.com/user-attachments/assets/bd7dcbdc-bf95-4391-b42a-f0161f5a5651" />
+
