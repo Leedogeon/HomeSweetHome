@@ -3,13 +3,13 @@
 https://github.com/TimeFlies-KR/home-sweet-home
 커밋 기록
 
-Home Sweet Home
-2D 액션 플랫포머 팀 프로젝트
-개발 기간 : 2024.12 ~ 2025.06
-개발 인원 : 4명
-담당 : 플레이어 시스템 / 전투 / 카메라 / UI 등
-Engine : Unity 2022.3.50f1
-Language : C#
+Home Sweet Home<br>
+2D 액션 플랫포머 팀 프로젝트<br>
+개발 기간 : 2024.12 ~ 2025.06<br>
+개발 인원 : 4명<br>
+담당 : 플레이어 시스템 / 전투 / 카메라 / UI 등<br>
+Engine : Unity 2022.3.50f1<br>
+Language : C#<br>
 
 
 키보드 커스텀 설정<br>
